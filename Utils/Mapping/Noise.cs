@@ -4,6 +4,45 @@ using UnityEngine;
 namespace ZinklofDev.Utils.Mapping
 {
     /// <summary>
+    /// Class <c>PerlinMap</c> is used to save the values that are useful in mapping with perlin noise, including things like the min and max height of your map, and the map itself.
+    /// <summary>
+    public class PerlinMap
+    {
+        public float[,] map { get; private set; }
+        public float maxMapHeight { get; private set; }
+        public float minMapHeight { get; private set; }
+        public int64 seed { get; private set; }
+        
+        public PerlinNoiseMap(float[,] map, float maxMapHeight, float minMapHeight)
+        {
+            this.map = map;
+            this.maxMapHeight = maxMapHeight;
+            this.minMapHeight = minMapHeight;
+        }
+
+        public PerlinNoiseMap(float[,] map, float maxMapHeight, float minMapHeight, int64 seed)
+        {
+            this.map = map;
+            this.maxMapHeight = maxMapHeight;
+            this.minMapHeight = minMapHeight;
+            this.seed = seed;
+        }
+
+        public void ChangeMapValue(float x, float y, float newValue)
+        {
+            if (newValue > maxMapHeight)
+            {
+                maxMapHeight = newValue;
+            }
+            else if (newValue < minMapHieght)
+            {
+                minMapHeight = newValue;
+            }
+            map[x,y] = newValue;
+        }
+    }   
+
+    /// <summary>
     /// Class <c>Noise</c> provides functions that work in twine with UnityEngine to help make maps out of various noise methods like Perlin Noise.
     /// </summary>
     public static class Noise
@@ -100,6 +139,97 @@ namespace ZinklofDev.Utils.Mapping
             }
 
             return noiseMap;
+        }
+
+        public PerlinMap GenPerlinMap(int width, int height, float scale, int octaves, float persistance, float lacunarity, vector2 offset)
+        {
+            if (scale <= 0)
+            {
+                Debug.LogWarning("Zinklofdev.Utils.Mapping.Noise.GenPerlinMap: You cannot have a zero or less scale, clamping to 0.001f");
+                scale = 0.001f;
+            }
+            
+            float[,] noiseMap;
+            System.Random rand = new System.Random;
+            Vector2[] octaveOffsets = new Vector2[octaves];
+            
+            float maxPossibleHeight;
+            float returnedMaxHeight;
+            float returnedMinHeight;
+
+            float amplitude = 1;
+            float frequency = 1;
+
+            for (int i = 0; i < octaves; i++)
+            {
+                float offsetX = rand.Next(-100000, 100000) + offset.x;
+                float offsetY = rand.Next(-100000, 100000) - offset.y;
+                octaveOffsets[i] = new Vector2(offsetX, offsetY);
+
+                maxPossibleHieght += amplitude;
+                amplitude *= persistance;
+            }
+
+            float maxLocalNoiseHeight = float.MinValue;
+            float minLocalNoiseHeight = float.MaxValue;
+
+            float halfWidth = width / 2f;
+            float halfHeight = height / 2f;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    amplitude = 1;
+                    frequency = 1;
+                    float noiseHeight = 0;
+
+                    for (int i = 0; i < octaves; i++)
+                    {
+                        float sampleX = (x - halfWidth + octaveOffsets[i].x) / scale * frequency;
+                        float sampleY = (y - halfHeight + octaveOffsets[i].y) / scale * frequency;
+
+                        float perlinNoiseValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
+
+                        noiseHeight += perlinNoiseValue * amplitude;
+
+                        amplitude *= persistance;
+                        frequency *= lacunarity;
+                    }
+
+                    if (noiseHeight > returnedMaxHeight)
+                    {
+                        returnedMaxHeight = noiseHeight;
+                    }
+                    else if (noiseHeight < returnedMinHeight)
+                    {
+                        returnedMinHeight = noiseHeight;
+                    }
+
+                    if (noiseHeight > maxLocalNoiseHeight)
+                    {
+                        maxLocalNoiseHeight = noiseHeight;
+                    }
+                    else if (noiseHeight < minLocalNoiseHeight)
+                    {
+                        minLocalNoiseHeight = noiseHeight;
+                    }
+
+                    noiseMap[x, y] = noiseHeight;
+                }
+            }
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    float normalizedHeight = (noiseMap[x, y] + 1) / (2f * maxPossibleHieght / 1.75f);
+                    noiseMap[x, y] = normalizedHeight;
+                }
+            }
+
+            PerlinMap map = new PerlinMap(noiseMap, returnedMaxHeight, returnedMinHeight, seed);
+            return map;
         }
 
         /// <summary>
