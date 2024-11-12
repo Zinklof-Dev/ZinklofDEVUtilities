@@ -88,5 +88,32 @@ namespace ZinklofDev.Utils.MathZ
         {
             return (Numbers.Sqr((x.x - y.x)) + Numbers.Sqr((x.y - y.y)) + Numbers.Sqr((x.z - y.z)) + Numbers.Sqr((x.w - y.w)));
         }
+        /// <summary>
+        /// Provides a point that is x units in the direction provided from the start point provided
+        /// <summary>
+        /// <param name="startPoint">Point to start from</param>
+        /// <param name="dir">Quaternion direction to move in</param>
+        /// <param name="dist">How far ahead of the start point should this new point be</param>
+        /// <returns>A point that is dist units away from the startPoint in the dir direction.</returns>
+        static public Vector3 DirPoint(Vector3 startPoint, Quaternion dir, float dist)
+        {
+            Vector3 vectorDir = dir * startPoint;
+            Vector3 returnPoint = startPoint + vectorDir.normalized * dist;
+            return returnPoint;
+        }
+        /// <summary>
+        /// Provides a point that is x units in the direction provided from the start point provided (slightly more expensive than the overload that uses a quaternion)
+        /// <summary>
+        /// <param name="startPoint">Point to start from</param>
+        /// <param name="eulerDir">Vector3 direction to move in</param>
+        /// <param name="dist">How far ahead of the start point should this new point be</param>
+        /// <returns>A point that is dist units away from the startPoint in the eulerDir direction.</returns>
+        static public Vector3 DirPoint(Vector3 startPoint, Vector3 eulerDir, float dist)
+        {
+            Quaternion dir = Quaternion.Euler(eulerDir);
+            Vector3 vectorDir = dir * startPoint;
+            Vector3 returnPoint = startPoint + vectorDir.normalized * dist;
+            return returnPoint;
+        }
     }
 }
