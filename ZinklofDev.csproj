@@ -20,6 +20,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ReferencedDlls\**" />
+    <EmbeddedResource Remove="ReferencedDlls\**" />
+    <None Remove="ReferencedDlls\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Unity.Cecil">
       <HintPath>..\..\Program Files\Unity 2022.3.12f1\Editor\Data\Managed\UnityEngine\Unity.Cecil.dll</HintPath>
     </Reference>
