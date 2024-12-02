@@ -4,41 +4,72 @@ using UnityEngine;
 namespace ZinklofDev.Utils.Mapping
 {
     /// <summary>
-    /// Class <c>PerlinMap</c> is used to save the values that are useful in mapping with perlin noise, including things like the min and max height of your map, and the map itself.
-    /// <summary>
+    /// Class <c>PerlinMap</c> is used to save the values that are useful in mapping with perlin noise, including things like the min and max height of your map, the seed used to gernate it, and the map itself.
+    /// </summary>
     public class PerlinMap
     {
-        public float[,] map { get; private set; }
-        public float maxMapHeight { get; private set; }
-        public float minMapHeight { get; private set; }
-        public int64 seed { get; private set; }
+        /// <summary>
+        /// 2D float array representing your perlin map, first value is x, second is y, the value of [x,y] is the height at that location.
+        /// </summary>
+        public float[,] Map { get; private set; }
+        /// <summary>
+        /// The y value of the heighest reported across the entire map
+        /// </summary>
+        public float MaxMapHeight { get; private set; }
+        /// <summary>
+        /// the y value of the lowest point reported across the entire map
+        /// </summary>
+        public float MinMapHeight { get; private set; }
+        /// <summary>
+        /// the seed that was used when the map was generated, returns null if the map was generated without one (be careful as this returning null could break logic, prepare for the possibility that this is a null value)
+        /// </summary>
+        public int Seed { get; private set; }
         
-        public PerlinNoiseMap(float[,] map, float maxMapHeight, float minMapHeight)
+        /// <summary>
+        /// Creates a new PerlinMap Class instance with the map, min and max height, but does not save a seed into memory (for use by the GenPerlinMap Function in Utils.Mapping.Noise)
+        /// </summary>
+        /// <param name="map"></param>
+        /// <param name="maxMapHeight"></param>
+        /// <param name="minMapHeight"></param>
+        public PerlinMap(float[,] map, float maxMapHeight, float minMapHeight)
         {
-            this.map = map;
-            this.maxMapHeight = maxMapHeight;
-            this.minMapHeight = minMapHeight;
+            this.Map = map;
+            this.MaxMapHeight = maxMapHeight;
+            this.MinMapHeight = minMapHeight;
         }
 
-        public PerlinNoiseMap(float[,] map, float maxMapHeight, float minMapHeight, int64 seed)
+        /// <summary>
+        /// Creates a new PerlinMap Class instance with the map, min and max height, and the seed used on the random number generator (for use by the GenPerlinMap Function in Utils.Mapping.Noise)
+        /// </summary>
+        /// <param name="map"></param>
+        /// <param name="maxMapHeight"></param>
+        /// <param name="minMapHeight"></param>
+        /// <param name="seed"></param>
+        public PerlinMap(float[,] map, float maxMapHeight, float minMapHeight, int seed)
         {
-            this.map = map;
-            this.maxMapHeight = maxMapHeight;
-            this.minMapHeight = minMapHeight;
-            this.seed = seed;
+            this.Map = map;
+            this.MaxMapHeight = maxMapHeight;
+            this.MinMapHeight = minMapHeight;
+            this.Seed = seed;
         }
 
-        public void ChangeMapValue(float x, float y, float newValue)
+        /// <summary>
+        /// Allows you to change a value of the Float array saved inside the class that is by default a private set.
+        /// </summary>
+        /// <param name="x">x value</param>
+        /// <param name="y">y value</param>
+        /// <param name="newValue">new height value</param>
+        public void ChangeMapValue(int x, int y, float newValue)
         {
-            if (newValue > maxMapHeight)
+            if (newValue > MaxMapHeight)
             {
-                maxMapHeight = newValue;
+                MaxMapHeight = newValue;
             }
-            else if (newValue < minMapHieght)
+            else if (newValue < MinMapHeight)
             {
-                minMapHeight = newValue;
+                MinMapHeight = newValue;
             }
-            map[x,y] = newValue;
+            Map[x,y] = newValue;
         }
     }   
 
@@ -141,7 +172,22 @@ namespace ZinklofDev.Utils.Mapping
             return noiseMap;
         }
 
-        public PerlinMap GenPerlinMap(int width, int height, float scale, int octaves, float persistance, float lacunarity, vector2 offset)
+        /// <summary>
+        /// A class to provide a PerlinMap class that has more infromation returned than the old perlin generation function, it operates much the same, just returns new info that could be useful.
+        /// the width and height will directly translate to pixels if used to create a 2D texture, or roughly to the vert ID if used for a uniform plane
+        /// if you have a non uniform plane, or want to use this on a 3D shape, it is highly reccommended to use this to make a large (2/4k) texture to sample point height from.
+        /// <c>POTTENTIALLY SLOW FUNCTION, GENERATE ONCE THEN USE</c>
+        /// </summary>
+        /// <param name="width">how many points in the 2D x dimension.</param>
+        /// <param name="height">how many points in the 2D y dimension.</param>
+        /// <param name="seed">Seed used to change re-randomize the generated noise, or get the exact same again.</param>
+        /// <param name="scale">used to change how large or small the image used to make the point map is</param>
+        /// <param name="octaves">Changes how many layers of perlin noise to layer/sample, results in more detail</param>
+        /// <param name="persistance">above 0 - 1, changes how persistant your amplitude is per octave</param>
+        /// <param name="lacunarity">greater than 1, changes how much greater the frequency is per octave (how much smaller the details get)</param>
+        /// <param name="offset">the offset by pixels that the perlin noise has, used to shift the map if you want to make multiple chunks</param>
+        /// <returns>A PerlinMap class</returns>
+        public static PerlinMap GenPerlinMap(int width, int height, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset)
         {
             if (scale <= 0)
             {
@@ -149,13 +195,13 @@ namespace ZinklofDev.Utils.Mapping
                 scale = 0.001f;
             }
             
-            float[,] noiseMap;
-            System.Random rand = new System.Random;
+            float[,] noiseMap = new float[width, height];
+            System.Random rand = new System.Random(seed);
             Vector2[] octaveOffsets = new Vector2[octaves];
             
-            float maxPossibleHeight;
-            float returnedMaxHeight;
-            float returnedMinHeight;
+            float maxPossibleHeight = 0;
+            float returnedMaxHeight = 0;
+            float returnedMinHeight = 0;
 
             float amplitude = 1;
             float frequency = 1;
@@ -166,7 +212,7 @@ namespace ZinklofDev.Utils.Mapping
                 float offsetY = rand.Next(-100000, 100000) - offset.y;
                 octaveOffsets[i] = new Vector2(offsetX, offsetY);
 
-                maxPossibleHieght += amplitude;
+                maxPossibleHeight += amplitude;
                 amplitude *= persistance;
             }
 
@@ -223,7 +269,7 @@ namespace ZinklofDev.Utils.Mapping
             {
                 for (int x = 0; x < width; x++)
                 {
-                    float normalizedHeight = (noiseMap[x, y] + 1) / (2f * maxPossibleHieght / 1.75f);
+                    float normalizedHeight = (noiseMap[x, y] + 1) / (2f * maxPossibleHeight / 1.75f);
                     noiseMap[x, y] = normalizedHeight;
                 }
             }

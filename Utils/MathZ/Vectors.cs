@@ -90,7 +90,7 @@ namespace ZinklofDev.Utils.MathZ
         }
         /// <summary>
         /// Provides a point that is x units in the direction provided from the start point provided
-        /// <summary>
+        /// </summary>
         /// <param name="startPoint">Point to start from</param>
         /// <param name="dir">Quaternion direction to move in</param>
         /// <param name="dist">How far ahead of the start point should this new point be</param>
@@ -103,7 +103,7 @@ namespace ZinklofDev.Utils.MathZ
         }
         /// <summary>
         /// Provides a point that is x units in the direction provided from the start point provided (slightly more expensive than the overload that uses a quaternion)
-        /// <summary>
+        /// </summary>
         /// <param name="startPoint">Point to start from</param>
         /// <param name="eulerDir">Vector3 direction to move in</param>
         /// <param name="dist">How far ahead of the start point should this new point be</param>
