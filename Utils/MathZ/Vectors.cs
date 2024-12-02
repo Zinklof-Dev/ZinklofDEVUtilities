@@ -97,7 +97,7 @@ namespace ZinklofDev.Utils.MathZ
         /// <returns>A point that is dist units away from the startPoint in the dir direction.</returns>
         static public Vector3 DirPoint(Vector3 startPoint, Quaternion dir, float dist)
         {
-            Vector3 vectorDir = dir * startPoint;
+            Vector3 vectorDir = dir - startPoint;
             Vector3 returnPoint = startPoint + vectorDir.normalized * dist;
             return returnPoint;
         }
@@ -111,7 +111,7 @@ namespace ZinklofDev.Utils.MathZ
         static public Vector3 DirPoint(Vector3 startPoint, Vector3 eulerDir, float dist)
         {
             Quaternion dir = Quaternion.Euler(eulerDir);
-            Vector3 vectorDir = dir * startPoint;
+            Vector3 vectorDir = dir - startPoint;
             Vector3 returnPoint = startPoint + vectorDir.normalized * dist;
             return returnPoint;
         }
