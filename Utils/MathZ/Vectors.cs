@@ -97,7 +97,14 @@ namespace ZinklofDev.Utils.MathZ
         /// <returns>A point that is dist units away from the startPoint in the dir direction.</returns>
         static public Vector3 DirPoint(Vector3 startPoint, Quaternion dir, float dist)
         {
-            Vector3 vectorDir = dir - startPoint;
+            Quaternion P = new Quaternion(0, 0, 0, 1);
+            Quaternion R = dir;
+            Quaternion E = new Quaternion(-dir.x, -dir.y, -dir.z, dir.w);
+
+            Quaternion newDir = (P * R) * E;
+
+            Vector3 vectorDir = new Vector3(newDir.x, newDir.y, newDir.z);
+
             Vector3 returnPoint = startPoint + vectorDir.normalized * dist;
             return returnPoint;
         }
@@ -111,8 +118,47 @@ namespace ZinklofDev.Utils.MathZ
         static public Vector3 DirPoint(Vector3 startPoint, Vector3 eulerDir, float dist)
         {
             Quaternion dir = Quaternion.Euler(eulerDir);
-            Vector3 vectorDir = dir - startPoint;
+
+            Quaternion P = new Quaternion(0, 0, 0, 1);
+            Quaternion R = dir;
+            Quaternion E = new Quaternion(-dir.x, -dir.y, -dir.z, dir.w);
+
+            Quaternion newDir = (P * R) * E;
+
+            Vector3 vectorDir = new Vector3(newDir.x, newDir.y, newDir.z);
+
             Vector3 returnPoint = startPoint + vectorDir.normalized * dist;
+            return returnPoint;
+        }
+
+        static public Vector3 DirPoint(Vector3 startPoint, Vector3 eulerDir, float dist, bool verbose)
+        {
+            Quaternion dir = Quaternion.Euler(eulerDir);
+            Debug.Log("dir: " + dir);
+
+            Quaternion P = new Quaternion(0, 0, 0, 1); Debug.Log("P: " + P);
+            Quaternion R = dir; Debug.Log("P: " + R);
+            Quaternion E = new Quaternion(-dir.x, -dir.y, -dir.z, dir.w); Debug.Log("P: " + E);
+
+            Quaternion newDir = (P * R) * E; Debug.Log("newDir: " + newDir);
+
+            Vector3 vectorDir = new Vector3(newDir.x, newDir.y, newDir.z); Debug.Log("vectorDir: " + vectorDir);
+
+            Vector3 returnPoint = startPoint + vectorDir.normalized * dist; Debug.Log("returnPoint: " + returnPoint);
+            return returnPoint;
+        }
+
+        static public Vector3 DirPoint(Vector3 startPoint, Quaternion dir, float dist, bool verbose)
+        {
+            Quaternion P = new Quaternion(0, 0, 0, 1); Debug.Log("P: " + P);
+            Quaternion R = dir; Debug.Log("P: " + R);
+            Quaternion E = new Quaternion(-dir.x, -dir.y, -dir.z, dir.w); Debug.Log("P: " + E);
+
+            Quaternion newDir = (P * R) * E; Debug.Log("newDir: " + newDir);
+
+            Vector3 vectorDir = new Vector3(newDir.x, newDir.y, newDir.z); Debug.Log("vectorDir: " + vectorDir);
+
+            Vector3 returnPoint = startPoint + vectorDir.normalized * dist; Debug.Log("returnPoint: " + returnPoint);
             return returnPoint;
         }
     }
