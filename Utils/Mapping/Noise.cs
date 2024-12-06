@@ -93,6 +93,7 @@ namespace ZinklofDev.Utils.Mapping
         /// <param name="lacunarity">greater than 1, changes how much greater the frequency is per octave (how much smaller the details get)</param>
         /// <param name="offset">the offset by pixels that the perlin noise has, used to shift the map if you want to make multiple chunks</param>
         /// <returns>A 2d float array / float[]</returns>
+        [ObsoleteAttribute("GenPerlinNoiseMap is obsolete. Use GenPerlinMap instead.", false)]
         public static float[,] GenPerlinNoiseMap(int width, int height, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset)
         {
             float[,] noiseMap = new float[width, height];
@@ -286,6 +287,56 @@ namespace ZinklofDev.Utils.Mapping
         /// <param name="regionSize">how large the region is</param>
         /// <param name="accuracy">how many samples the algorithm does before giving up on a potential point, a low number can ruin the effect. too many gets very expensive.</param>
         /// <returns>A List of Vector 2s</returns>
+        public static async Task<List<Vector2>> PoissonSamplingAsync(float radius, Vector2 regionSize, int accuracy = 30)
+        {
+            System.Random rand = new System.Random();
+
+            float cellSize = radius / Mathf.Sqrt(2);
+
+            int[,] grid = new int[Mathf.CeilToInt(regionSize.x / cellSize), Mathf.CeilToInt(regionSize.y / cellSize)];
+            List<Vector2> points = new List<Vector2>();
+            List<Vector2> spawnPoints = new List<Vector2>();
+
+            spawnPoints.Add(regionSize / 2);
+            while (spawnPoints.Count > 0)
+            {
+                int spawnIndex = rand.Next(0, spawnPoints.Count);
+                Vector2 spawnCenter = spawnPoints[spawnIndex];
+                bool candidateAccepted = false;
+
+                for (int i = 0; i < accuracy; i++)
+                {
+                    float angle = (float)rand.NextDouble() * 3.1414592f * 2;
+                    Vector2 dir = new Vector2(Mathf.Sin(angle), Mathf.Cos(angle));
+                    Vector2 candidate = spawnCenter + dir * (float)(rand.NextDouble() * (2 * radius - radius) + radius);
+                    if (IsValid(candidate, regionSize, cellSize, radius, points, grid))
+                    {
+                        points.Add(candidate);
+                        spawnPoints.Add(candidate);
+                        grid[(int)(candidate.x / cellSize), (int)(candidate.y / cellSize)] = points.Count;
+                        candidateAccepted = true;
+                        break;
+                    }
+                }
+                if (!candidateAccepted)
+                {
+                    spawnPoints.RemoveAt(spawnIndex);
+                }
+
+            }
+
+            return points;
+        }
+        
+        /// <summary>
+        /// uses the Poisson Disc Sampling method to provide a list of vector2 / points that can be used for various fairly uncommon needs.
+        /// made to help me generate a non uniform plane that can be used for low poly map generation. <c>EXTREMELY SLOW FUNCTION, GENERATE ONCE THEN USE</c>
+        /// </summary>
+        /// <param name="radius">how far away from another point a point can be</param>
+        /// <param name="regionSize">how large the region is</param>
+        /// <param name="accuracy">how many samples the algorithm does before giving up on a potential point, a low number can ruin the effect. too many gets very expensive.</param>
+        /// <returns>A List of Vector 2s</returns>
+        [[ObsoleteAttribute("PoissonDiscSamplingVector2 is obsolete due to hanging applications. use PoissonSamplingAsync instead.", false)]]
         public static List<Vector2> PoissonDiscSamplingVector2(float radius, Vector2 regionSize, int accuracy = 30)
         {
             System.Random rand = new System.Random();
