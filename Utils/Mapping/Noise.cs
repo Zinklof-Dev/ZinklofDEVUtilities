@@ -174,7 +174,7 @@ namespace ZinklofDev.Utils.Mapping
         }
 
         /// <summary>
-        /// A class to provide a PerlinMap class that has more infromation returned than the old perlin generation function, it operates much the same, just returns new info that could be useful.
+        /// A function to provide a PerlinMap class that has more infromation returned than the old perlin generation function, it operates much the same, just returns new info that could be useful.
         /// the width and height will directly translate to pixels if used to create a 2D texture, or roughly to the vert ID if used for a uniform plane
         /// if you have a non uniform plane, or want to use this on a 3D shape, it is highly reccommended to use this to make a large (2/4k) texture to sample point height from.
         /// <c>POTTENTIALLY SLOW FUNCTION, GENERATE ONCE THEN USE</c>
@@ -280,16 +280,128 @@ namespace ZinklofDev.Utils.Mapping
         }
 
         /// <summary>
+        /// A function to provide a PerlinMap class that has more infromation returned than the old perlin generation function, it operates much the same, just returns new info that could be useful.
+        /// the width and height will directly translate to pixels if used to create a 2D texture, or roughly to the vert ID if used for a uniform plane
+        /// if you have a non uniform plane, or want to use this on a 3D shape, it is highly reccommended to use this to make a large (2/4k) texture to sample point height from.
+        /// <c>POTTENTIALLY SLOW FUNCTION, GENERATE ONCE THEN USE</c>
+        /// </summary>
+        /// <param name="width">how many points in the 2D x dimension.</param>
+        /// <param name="height">how many points in the 2D y dimension.</param>
+        /// <param name="seed">Seed used to change re-randomize the generated noise, or get the exact same again.</param>
+        /// <param name="scale">used to change how large or small the image used to make the point map is</param>
+        /// <param name="octaves">Changes how many layers of perlin noise to layer/sample, results in more detail</param>
+        /// <param name="persistance">above 0 - 1, changes how persistant your amplitude is per octave</param>
+        /// <param name="lacunarity">greater than 1, changes how much greater the frequency is per octave (how much smaller the details get)</param>
+        /// <param name="offset">the offset by pixels that the perlin noise has, used to shift the map if you want to make multiple chunks</param>
+        /// <returns>A PerlinMap class</returns>
+        public static async Task<PerlinMap> GenPerlinMapAsnyc(int width, int height, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset)
+        {
+            if (scale <= 0)
+            {
+                Debug.LogWarning("Zinklofdev.Utils.Mapping.Noise.GenPerlinMap: You cannot have a zero or less scale, clamping to 0.001f");
+                scale = 0.001f;
+            }
+            
+            float[,] noiseMap = new float[width, height];
+            System.Random rand = new System.Random(seed);
+            Vector2[] octaveOffsets = new Vector2[octaves];
+            
+            float maxPossibleHeight = 0;
+            float returnedMaxHeight = 0;
+            float returnedMinHeight = 0;
+
+            float amplitude = 1;
+            float frequency = 1;
+
+            for (int i = 0; i < octaves; i++)
+            {
+                float offsetX = rand.Next(-100000, 100000) + offset.x;
+                float offsetY = rand.Next(-100000, 100000) - offset.y;
+                octaveOffsets[i] = new Vector2(offsetX, offsetY);
+
+                maxPossibleHeight += amplitude;
+                amplitude *= persistance;
+            }
+
+            float maxLocalNoiseHeight = float.MinValue;
+            float minLocalNoiseHeight = float.MaxValue;
+
+            float halfWidth = width / 2f;
+            float halfHeight = height / 2f;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    amplitude = 1;
+                    frequency = 1;
+                    float noiseHeight = 0;
+
+                    for (int i = 0; i < octaves; i++)
+                    {
+                        float sampleX = (x - halfWidth + octaveOffsets[i].x) / scale * frequency;
+                        float sampleY = (y - halfHeight + octaveOffsets[i].y) / scale * frequency;
+
+                        float perlinNoiseValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
+
+                        noiseHeight += perlinNoiseValue * amplitude;
+
+                        amplitude *= persistance;
+                        frequency *= lacunarity;
+                    }
+
+                    if (noiseHeight > returnedMaxHeight)
+                    {
+                        returnedMaxHeight = noiseHeight;
+                    }
+                    else if (noiseHeight < returnedMinHeight)
+                    {
+                        returnedMinHeight = noiseHeight;
+                    }
+
+                    if (noiseHeight > maxLocalNoiseHeight)
+                    {
+                        maxLocalNoiseHeight = noiseHeight;
+                    }
+                    else if (noiseHeight < minLocalNoiseHeight)
+                    {
+                        minLocalNoiseHeight = noiseHeight;
+                    }
+
+                    noiseMap[x, y] = noiseHeight;
+                }
+            }
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    float normalizedHeight = (noiseMap[x, y] + 1) / (2f * maxPossibleHeight / 1.75f);
+                    noiseMap[x, y] = normalizedHeight;
+                }
+            }
+
+            PerlinMap map = new PerlinMap(noiseMap, returnedMaxHeight, returnedMinHeight, seed);
+            return map;
+        }
+
+        /// <summary>
         /// uses the Poisson Disc Sampling method to provide a list of vector2 / points that can be used for various fairly uncommon needs.
         /// made to help me generate a non uniform plane that can be used for low poly map generation. <c>EXTREMELY SLOW FUNCTION, GENERATE ONCE THEN USE</c>
         /// </summary>
         /// <param name="radius">how far away from another point a point can be</param>
         /// <param name="regionSize">how large the region is</param>
         /// <param name="accuracy">how many samples the algorithm does before giving up on a potential point, a low number can ruin the effect. too many gets very expensive.</param>
+        /// <param name="seed">seed to base the random number generator off of, useful for getting the same result multiple times </param>
         /// <returns>A List of Vector 2s</returns>
-        public static async Task<List<Vector2>> PoissonSamplingAsync(float radius, Vector2 regionSize, int accuracy = 30)
+        public static async Task<List<Vector2>> PoissonSamplingAsync(float radius, Vector2 regionSize, int accuracy = 30, int seed = null)
         {
-            System.Random rand = new System.Random();
+            if (seed == null)
+            {
+                seed = Unity.Random.Range(0,999999);
+            }
+            
+            System.Random rand = new System.Random(seed);
 
             float cellSize = radius / Mathf.Sqrt(2);
 
@@ -335,11 +447,17 @@ namespace ZinklofDev.Utils.Mapping
         /// <param name="radius">how far away from another point a point can be</param>
         /// <param name="regionSize">how large the region is</param>
         /// <param name="accuracy">how many samples the algorithm does before giving up on a potential point, a low number can ruin the effect. too many gets very expensive.</param>
+        /// <param name="seed">seed to base the random number generator off of, useful for getting the same result multiple times </param>
         /// <returns>A List of Vector 2s</returns>
-        [[ObsoleteAttribute("PoissonDiscSamplingVector2 is obsolete due to hanging applications. use PoissonSamplingAsync instead.", false)]]
-        public static List<Vector2> PoissonDiscSamplingVector2(float radius, Vector2 regionSize, int accuracy = 30)
+        //[[ObsoleteAttribute("PoissonDiscSamplingVector2 is obsolete due to hanging applications. use PoissonSamplingAsync instead.", false)]]
+        public static List<Vector2> PoissonDiscSamplingVector2(float radius, Vector2 regionSize, int accuracy = 30, int seed = null)
         {
-            System.Random rand = new System.Random();
+            if (seed == null)
+            {
+                seed = Unity.Random.Range(0,999999);
+            }
+            
+            System.Random rand = new System.Random(seed);
 
             float cellSize = radius / Mathf.Sqrt(2);
 
