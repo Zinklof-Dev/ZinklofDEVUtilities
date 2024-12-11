@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Threading.Tasks;
+using UnityEngine.UIElements;
 
 namespace ZinklofDev.Utils.Mapping
 {
@@ -188,6 +191,7 @@ namespace ZinklofDev.Utils.Mapping
         /// <param name="lacunarity">greater than 1, changes how much greater the frequency is per octave (how much smaller the details get)</param>
         /// <param name="offset">the offset by pixels that the perlin noise has, used to shift the map if you want to make multiple chunks</param>
         /// <returns>A PerlinMap class</returns>
+        [ObsoleteAttribute("GenPerlinMap is obsolete. use GenPerlinMapAsync instead which is threaded and async to prevent freezing.", false)]
         public static PerlinMap GenPerlinMap(int width, int height, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset)
         {
             if (scale <= 0)
@@ -280,7 +284,7 @@ namespace ZinklofDev.Utils.Mapping
         }
 
         /// <summary>
-        /// A function to provide a PerlinMap class that has more infromation returned than the old perlin generation function, it operates much the same, just returns new info that could be useful.
+        /// (THREADED ASYNC VERS) A function to provide a PerlinMap class that has more infromation returned than the old perlin generation function, it operates much the same, just returns new info that could be useful.
         /// the width and height will directly translate to pixels if used to create a 2D texture, or roughly to the vert ID if used for a uniform plane
         /// if you have a non uniform plane, or want to use this on a 3D shape, it is highly reccommended to use this to make a large (2/4k) texture to sample point height from.
         /// <c>POTTENTIALLY SLOW FUNCTION, GENERATE ONCE THEN USE</c>
@@ -301,88 +305,102 @@ namespace ZinklofDev.Utils.Mapping
                 Debug.LogWarning("Zinklofdev.Utils.Mapping.Noise.GenPerlinMap: You cannot have a zero or less scale, clamping to 0.001f");
                 scale = 0.001f;
             }
-            
-            float[,] noiseMap = new float[width, height];
-            System.Random rand = new System.Random(seed);
-            Vector2[] octaveOffsets = new Vector2[octaves];
-            
-            float maxPossibleHeight = 0;
-            float returnedMaxHeight = 0;
-            float returnedMinHeight = 0;
 
-            float amplitude = 1;
-            float frequency = 1;
+            PerlinMap? map = null;
 
-            for (int i = 0; i < octaves; i++)
+            await Task.Run(() =>
             {
-                float offsetX = rand.Next(-100000, 100000) + offset.x;
-                float offsetY = rand.Next(-100000, 100000) - offset.y;
-                octaveOffsets[i] = new Vector2(offsetX, offsetY);
+                float[,] noiseMap = new float[width, height];
+                System.Random rand = new System.Random(seed);
+                Vector2[] octaveOffsets = new Vector2[octaves];
 
-                maxPossibleHeight += amplitude;
-                amplitude *= persistance;
-            }
+                float maxPossibleHeight = 0;
+                float returnedMaxHeight = 0;
+                float returnedMinHeight = 0;
 
-            float maxLocalNoiseHeight = float.MinValue;
-            float minLocalNoiseHeight = float.MaxValue;
+                float amplitude = 1;
+                float frequency = 1;
 
-            float halfWidth = width / 2f;
-            float halfHeight = height / 2f;
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
+                for (int i = 0; i < octaves; i++)
                 {
-                    amplitude = 1;
-                    frequency = 1;
-                    float noiseHeight = 0;
+                    float offsetX = rand.Next(-100000, 100000) + offset.x;
+                    float offsetY = rand.Next(-100000, 100000) - offset.y;
+                    octaveOffsets[i] = new Vector2(offsetX, offsetY);
 
-                    for (int i = 0; i < octaves; i++)
-                    {
-                        float sampleX = (x - halfWidth + octaveOffsets[i].x) / scale * frequency;
-                        float sampleY = (y - halfHeight + octaveOffsets[i].y) / scale * frequency;
-
-                        float perlinNoiseValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
-
-                        noiseHeight += perlinNoiseValue * amplitude;
-
-                        amplitude *= persistance;
-                        frequency *= lacunarity;
-                    }
-
-                    if (noiseHeight > returnedMaxHeight)
-                    {
-                        returnedMaxHeight = noiseHeight;
-                    }
-                    else if (noiseHeight < returnedMinHeight)
-                    {
-                        returnedMinHeight = noiseHeight;
-                    }
-
-                    if (noiseHeight > maxLocalNoiseHeight)
-                    {
-                        maxLocalNoiseHeight = noiseHeight;
-                    }
-                    else if (noiseHeight < minLocalNoiseHeight)
-                    {
-                        minLocalNoiseHeight = noiseHeight;
-                    }
-
-                    noiseMap[x, y] = noiseHeight;
+                    maxPossibleHeight += amplitude;
+                    amplitude *= persistance;
                 }
-            }
 
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
+                float maxLocalNoiseHeight = float.MinValue;
+                float minLocalNoiseHeight = float.MaxValue;
+
+                float halfWidth = width / 2f;
+                float halfHeight = height / 2f;
+
+                for (int y = 0; y < height; y++)
                 {
-                    float normalizedHeight = (noiseMap[x, y] + 1) / (2f * maxPossibleHeight / 1.75f);
-                    noiseMap[x, y] = normalizedHeight;
-                }
-            }
+                    for (int x = 0; x < width; x++)
+                    {
+                        amplitude = 1;
+                        frequency = 1;
+                        float noiseHeight = 0;
 
-            PerlinMap map = new PerlinMap(noiseMap, returnedMaxHeight, returnedMinHeight, seed);
-            return map;
+                        for (int i = 0; i < octaves; i++)
+                        {
+                            float sampleX = (x - halfWidth + octaveOffsets[i].x) / scale * frequency;
+                            float sampleY = (y - halfHeight + octaveOffsets[i].y) / scale * frequency;
+
+                            float perlinNoiseValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
+
+                            noiseHeight += perlinNoiseValue * amplitude;
+
+                            amplitude *= persistance;
+                            frequency *= lacunarity;
+                        }
+
+                        if (noiseHeight > returnedMaxHeight)
+                        {
+                            returnedMaxHeight = noiseHeight;
+                        }
+                        else if (noiseHeight < returnedMinHeight)
+                        {
+                            returnedMinHeight = noiseHeight;
+                        }
+
+                        if (noiseHeight > maxLocalNoiseHeight)
+                        {
+                            maxLocalNoiseHeight = noiseHeight;
+                        }
+                        else if (noiseHeight < minLocalNoiseHeight)
+                        {
+                            minLocalNoiseHeight = noiseHeight;
+                        }
+
+                        noiseMap[x, y] = noiseHeight;
+                    }
+                }
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        float normalizedHeight = (noiseMap[x, y] + 1) / (2f * maxPossibleHeight / 1.75f);
+                        noiseMap[x, y] = normalizedHeight;
+                    }
+                }
+
+                map = new PerlinMap(noiseMap, returnedMaxHeight, returnedMinHeight, seed);
+            });
+
+            if (map != null)
+            {
+                return map;
+            }
+            else
+            {
+                Debug.LogError("Zinklofdev.Utils.Mapping.Noise.GenPerlinMap: Thread failed to return perlin map.");
+                return null;
+            }
         }
 
         /// <summary>
@@ -394,48 +412,47 @@ namespace ZinklofDev.Utils.Mapping
         /// <param name="accuracy">how many samples the algorithm does before giving up on a potential point, a low number can ruin the effect. too many gets very expensive.</param>
         /// <param name="seed">seed to base the random number generator off of, useful for getting the same result multiple times </param>
         /// <returns>A List of Vector 2s</returns>
-        public static async Task<List<Vector2>> PoissonSamplingAsync(float radius, Vector2 regionSize, int accuracy = 30, int seed = null)
-        {
-            if (seed == null)
-            {
-                seed = Unity.Random.Range(0,999999);
-            }
-            
+        public static async Task<List<Vector2>> PoissonSamplingAsync(float radius, Vector2 regionSize, int seed, int accuracy = 30)
+        {   
             System.Random rand = new System.Random(seed);
 
-            float cellSize = radius / Mathf.Sqrt(2);
-
-            int[,] grid = new int[Mathf.CeilToInt(regionSize.x / cellSize), Mathf.CeilToInt(regionSize.y / cellSize)];
             List<Vector2> points = new List<Vector2>();
-            List<Vector2> spawnPoints = new List<Vector2>();
 
-            spawnPoints.Add(regionSize / 2);
-            while (spawnPoints.Count > 0)
+            await Task.Run(() =>
             {
-                int spawnIndex = rand.Next(0, spawnPoints.Count);
-                Vector2 spawnCenter = spawnPoints[spawnIndex];
-                bool candidateAccepted = false;
+                float cellSize = radius / Mathf.Sqrt(2);
 
-                for (int i = 0; i < accuracy; i++)
+                int[,] grid = new int[Mathf.CeilToInt(regionSize.x / cellSize), Mathf.CeilToInt(regionSize.y / cellSize)];
+                List<Vector2> spawnPoints = new List<Vector2>
                 {
-                    float angle = (float)rand.NextDouble() * 3.1414592f * 2;
-                    Vector2 dir = new Vector2(Mathf.Sin(angle), Mathf.Cos(angle));
-                    Vector2 candidate = spawnCenter + dir * (float)(rand.NextDouble() * (2 * radius - radius) + radius);
-                    if (IsValid(candidate, regionSize, cellSize, radius, points, grid))
+                    regionSize / 2
+                };
+                while (spawnPoints.Count > 0)
+                {
+                    int spawnIndex = rand.Next(0, spawnPoints.Count);
+                    Vector2 spawnCenter = spawnPoints[spawnIndex];
+                    bool candidateAccepted = false;
+
+                    for (int i = 0; i < accuracy; i++)
                     {
-                        points.Add(candidate);
-                        spawnPoints.Add(candidate);
-                        grid[(int)(candidate.x / cellSize), (int)(candidate.y / cellSize)] = points.Count;
-                        candidateAccepted = true;
-                        break;
+                        float angle = (float)rand.NextDouble() * 3.1414592f * 2;
+                        Vector2 dir = new Vector2(Mathf.Sin(angle), Mathf.Cos(angle));
+                        Vector2 candidate = spawnCenter + dir * (float)(rand.NextDouble() * (2 * radius - radius) + radius);
+                        if (IsValid(candidate, regionSize, cellSize, radius, points, grid))
+                        {
+                            points.Add(candidate);
+                            spawnPoints.Add(candidate);
+                            grid[(int)(candidate.x / cellSize), (int)(candidate.y / cellSize)] = points.Count;
+                            candidateAccepted = true;
+                            break;
+                        }
+                    }
+                    if (!candidateAccepted)
+                    {
+                        spawnPoints.RemoveAt(spawnIndex);
                     }
                 }
-                if (!candidateAccepted)
-                {
-                    spawnPoints.RemoveAt(spawnIndex);
-                }
-
-            }
+            });
 
             return points;
         }
@@ -449,14 +466,9 @@ namespace ZinklofDev.Utils.Mapping
         /// <param name="accuracy">how many samples the algorithm does before giving up on a potential point, a low number can ruin the effect. too many gets very expensive.</param>
         /// <param name="seed">seed to base the random number generator off of, useful for getting the same result multiple times </param>
         /// <returns>A List of Vector 2s</returns>
-        //[[ObsoleteAttribute("PoissonDiscSamplingVector2 is obsolete due to hanging applications. use PoissonSamplingAsync instead.", false)]]
-        public static List<Vector2> PoissonDiscSamplingVector2(float radius, Vector2 regionSize, int accuracy = 30, int seed = null)
+        [ObsoleteAttribute("PoissonDiscSamplingVector2 is obsolete. use PoissonSamplingAsync instead which is threaded and async to prevent freezing.", false)]
+        public static List<Vector2> PoissonDiscSamplingVector2(float radius, Vector2 regionSize, int seed, int accuracy = 30)
         {
-            if (seed == null)
-            {
-                seed = Unity.Random.Range(0,999999);
-            }
-            
             System.Random rand = new System.Random(seed);
 
             float cellSize = radius / Mathf.Sqrt(2);
