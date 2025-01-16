@@ -1,3 +1,5 @@
+// https://gdbooks.gitbooks.io/3dcollisions/content/Chapter1/closest_point_sphere.html
+
 using System;
 using UnityEngine;
 using ZinklofDev.Utils.MathZ;
