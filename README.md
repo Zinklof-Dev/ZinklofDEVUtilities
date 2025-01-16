@@ -1,6 +1,5 @@
-
-Stable Vers: 1.4.0
-Newest Vers E-2501A
+<p>Stable Vers: 1.4.0</p>
+<p>Newest Vers: E-2501A</p>
 
 | Version | Branch | Date | Change Logs |
 |:---:|:---:|:---:|:---:|
