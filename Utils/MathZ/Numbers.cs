@@ -135,5 +135,28 @@ namespace ZinklofDev.Utils.MathZ
             }
             return temp;
         }
+        /// <summary>
+        /// Authored: Dgoyette, Cole Houser
+        /// Rounds to the nearest multiple
+        /// </summary>
+        /// <param name="inputValue">The Number to round</param>
+        /// <param name="baseNumberOfMultiple">Multiple to round to</param>
+        /// <returns>InputValue rounded to the nearest occurance of the Multiple as a float.</returns>
+        static public float RoundToMultiple(float inputValue, float baseNumberOfMultiple)
+        {
+            return Mathf.Round(inputValue / baseNumberOfMultiple) * baseNumberOfMultiple;
+        }
+        /// <summary>
+        /// Authored: Bunny83, Dgoyette, Cole Houser
+        /// Override made by Bunny83 that allows use of tOffset when rounding.
+        /// </summary>
+        /// <param name="inputValue">The Number to round</param>
+        /// <param name="baseNumberOfMultiple">Multiple to round to</param>
+        /// <param name="tOffset">I dunno... its an offset? but how does it apply what does it do!? Cole doesn't even remember</param>
+        /// <returns>InputValue rounded to the nearest occurance of the Multiple as a float. Using tOffset to offset the result.</returns>
+        static float RoundToMultipule(float inputValue, float baseNumberOfMultiple, float tOffset)
+        {
+            return Mathf.Round((inputValue - tOffset) / baseNumberOfMultiple) * baseNumberOfMultiple + tOffset;
+        }
     }
 }
