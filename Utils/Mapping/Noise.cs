@@ -298,7 +298,7 @@ namespace ZinklofDev.Utils.Mapping
         /// <param name="lacunarity">greater than 1, changes how much greater the frequency is per octave (how much smaller the details get)</param>
         /// <param name="offset">the offset by pixels that the perlin noise has, used to shift the map if you want to make multiple chunks</param>
         /// <returns>A PerlinMap class</returns>
-        public static async Task<PerlinMap> GenPerlinMapAsnyc(int width, int height, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset)
+        public static async Task<PerlinMap> GenPerlinMapAsync(int width, int height, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset)
         {
             if (scale <= 0)
             {
@@ -565,5 +565,16 @@ namespace ZinklofDev.Utils.Mapping
 
             return map;
         }
+    }
+
+    /// <summary>
+    /// Generates a complete random noise map, literally TV static, no rhyme or reason or connection between each point, just a completely random number (float) from 0-1 (This function does open another thread to help avoid any kind of freezing, use with caution and this in mind)
+    /// </summary>
+    /// <param name="xSize"> How large the map is on the X axis</param>
+    /// <param name="ySize> How large the map is on the Y axis</param>
+    /// <param name="seed"> Optional param to set the seed for the random number algorithm</param>
+    public static float[,] GenerateStaticNoiseMap(float xSize, float ySize, long seed = 0)
+    {
+        // implement later
     }
 }
