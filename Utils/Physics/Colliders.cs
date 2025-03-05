@@ -4,7 +4,7 @@ using System;
 using UnityEngine;
 using ZinklofDev.Utils.MathZ;
 
-Namespace ZinklofDev.Physics
+namespace ZinklofDev.Physics
 {
     class Sphere // The most basic primitive to do this stuff with other than a point
     {
@@ -12,7 +12,7 @@ Namespace ZinklofDev.Physics
         public float radius = 1;
         public float radiusSqr { get; private set; }
 
-        public Sphere(Vector3 Ppsiton = Vector3.Empty, float radius = 1)
+        public Sphere(Vector3 position, float radius = 1)
         {
             this.position = position;
             this.radius = radius;
@@ -25,12 +25,12 @@ Namespace ZinklofDev.Physics
                 return true;
             }
             else
-                return false
+                return false;
         }
 
         public Vector3 ClosestPoint(Vector3 point)
         {
-            Vector3 dir = Vector3.Normalize(position - point) // vector dir pointing from sphere to the point
+            Vector3 dir = Vector3.Normalize(position - point); // vector dir pointing from sphere to the point
             return dir * radius;
         }
     }

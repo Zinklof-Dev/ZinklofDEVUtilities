@@ -565,16 +565,17 @@ namespace ZinklofDev.Utils.Mapping
 
             return map;
         }
-    }
 
-    /// <summary>
-    /// Generates a complete random noise map, literally TV static, no rhyme or reason or connection between each point, just a completely random number (float) from 0-1 (This function does open another thread to help avoid any kind of freezing, use with caution and this in mind)
-    /// </summary>
-    /// <param name="xSize"> How large the map is on the X axis</param>
-    /// <param name="ySize> How large the map is on the Y axis</param>
-    /// <param name="seed"> Optional param to set the seed for the random number algorithm</param>
-    public static float[,] GenerateStaticNoiseMap(float xSize, float ySize, long seed = 0)
-    {
-        // implement later
+        /// <summary>
+        /// Generates a complete random noise map, literally TV static, no rhyme or reason or connection between each point, just a completely random number (float) from 0-1 (This function does open another thread to help avoid any kind of freezing, use with caution and this in mind)
+        /// </summary>
+        /// <param name="xSize"> How large the map is on the X axis</param>
+        /// <param name="ySize> How large the map is on the Y axis</param>
+        /// <param name="seed"> Optional param to set the seed for the random number algorithm</param>
+        public static float[,] GenerateStaticNoiseMap(float xSize, float ySize, long seed = 0)
+        {
+            // implement later
+            return null;
+        }
     }
 }
