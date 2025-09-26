@@ -135,7 +135,7 @@ namespace ZinklofDev.Utils.MathZ
             return temp;
         }
         /// <summary>
-        /// Authored: Dgoyette, Cole Houser
+        /// Authored: Dgoyette, Cole Hauser
         /// Rounds to the nearest multiple
         /// </summary>
         /// <param name="inputValue">The Number to round</param>
@@ -146,7 +146,7 @@ namespace ZinklofDev.Utils.MathZ
             return Mathf.Round(inputValue / baseNumberOfMultiple) * baseNumberOfMultiple;
         }
         /// <summary>
-        /// Authored: Bunny83, Dgoyette, Cole Houser
+        /// Authored: Bunny83, Dgoyette, Cole Hauser
         /// Override made by Bunny83 that allows use of tOffset when rounding.
         /// </summary>
         /// <param name="inputValue">The Number to round</param>
