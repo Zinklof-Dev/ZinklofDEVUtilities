@@ -153,7 +153,7 @@ namespace ZinklofDev.Utils.MathZ
         /// <param name="baseNumberOfMultiple">Multiple to round to</param>
         /// <param name="tOffset">I dunno... its an offset? but how does it apply what does it do!? Cole doesn't even remember</param>
         /// <returns>InputValue rounded to the nearest occurance of the Multiple as a float. Using tOffset to offset the result.</returns>
-        static float RoundToMultipule(float inputValue, float baseNumberOfMultiple, float tOffset)
+        static public float RoundToMultipule(float inputValue, float baseNumberOfMultiple, float tOffset)
         {
             return Mathf.Round((inputValue - tOffset) / baseNumberOfMultiple) * baseNumberOfMultiple + tOffset;
         }
