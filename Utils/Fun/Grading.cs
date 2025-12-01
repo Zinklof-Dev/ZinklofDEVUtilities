@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ZinklofDev.Utils.Fun
 {
-    static class Grading
+    static class Grading // this is so poorly written but it was entirely for a one off thing so i guess its passable lmfao - zink december 2025 (a year later?)
     {
         /// <summary>
         /// Goofy way to grade things

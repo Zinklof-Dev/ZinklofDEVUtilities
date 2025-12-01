@@ -13,6 +13,7 @@ month : Sep
 xurl : https://www.cs.hmc.edu/tr/hmc-cs-2014-0905.pdf
 */
 
+/* commented as its a work in progress rn.
 /// <summary>
 /// Zrand is a random number generation class that uses the PCG RNG family of algorithms, which are code line efficient, memory efficient, speed efficient, and pretty random compared to other PRNGs. (Dont ask my source, I trusted their site :D) | 
 /// Specifically this is the PCG-XSL-RR 128/64 algorithm. which has a state of 128 bits, and can output 64 bit numbers, and is one of the fastest members in the family, albeit not as good statistically speaking with its outputs. |
@@ -189,6 +190,7 @@ public class Zrand64
         return min + (max - min) * (Next() / (float)ulong.MaxValue);
     }
 }
+*/
 
 /* 
  * Due to constraints known as im a lazy bum, we're gonna stick with Zrand64 and just provide it some wrapper functions to get 32 bit results :D
