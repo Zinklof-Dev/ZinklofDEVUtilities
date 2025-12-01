@@ -11,7 +11,7 @@ using System.IO;
 namespace ZinklofDev.Utils.Testing
 {
     /// <summary>
-    /// Base Class for tests, the main test class inherits from this, helps obscure some things you shouldn't touch
+    /// BACKWARDS COMPATABILITY PURPOSES! (test manager is considered no longer supported) Base Class for tests, the main test class inherits from this, helps obscure some things you shouldn't touch.
     /// </summary>
     public class TestBasics
     {
@@ -161,7 +161,7 @@ namespace ZinklofDev.Utils.Testing
     }
 
     /// <summary>
-    /// A test, used to ensure code works without too much manual testing, good practice to use these. visit zinklof.dev/testing for documentation (maybe)
+    /// BACKWARDS COMPATABILITY PURPOSES! (test manager is considered no longer supported) A test, used to ensure code works without too much manual testing, good practice to use these. visit zinklof.dev/testing for documentation (maybe)
     /// </summary>
     public class Test : TestBasics
     {

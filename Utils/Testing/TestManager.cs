@@ -14,7 +14,7 @@ using System.Xml.Linq;
 namespace ZinklofDev.Utils.Testing
 {
     /// <summary>
-    /// This class manages everything in the backend, from logging, handling settings, verbose logging, etc. etc. Runs after awake runs on every script in your FIRST scene
+    /// BACKWARDS COMPATABILITY PURPOSES! (test manager is considered no longer supported) This class manages everything in the backend, from logging, handling settings, verbose logging, etc. etc. Runs after awake runs on every script in your FIRST scene
     /// </summary>
     public static class TestManager
     {
