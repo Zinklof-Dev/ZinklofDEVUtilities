@@ -23,3 +23,7 @@
   | E-2501A | Experimental | 1/16/2025 | N/A |
   | 1.4.0 | Main | ??? | N/A |
 </div>
+
+
+<h1>Quick update before anyone looking from job applications looks at this</h1>
+this is an outdated version. look in project final under the !Bastion folders for an updated version when I stopped calling it utils and instead called it Bastion, the same name as my engine I'm now working on. (we don't question the evolving of utils into a framework into an engine).
